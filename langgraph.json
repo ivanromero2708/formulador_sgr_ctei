@@ -1,0 +1,10 @@
+{
+    "dockerfile_lines": [],
+    "graphs": {
+      "formulador_ctei": "./src/graph/builder.py:workflow_formulador_ctei_graph"
+    },
+    "python_version": "3.12",
+    "dependencies": [
+      "."
+    ]
+  }

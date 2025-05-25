@@ -1,0 +1,102 @@
+**Proyecto:** Plataforma de Monitoreo Inteligente para la Restauración de Humedales y Ordenamiento del Territorio en el Departamento del Atlántico
+
+---
+
+### entidad\_proponente\_usuario
+
+**Universidad del Atlántico** (Facultad de Ingeniería Ambiental y Ciencias del Mar)
+
+### alianzas\_usuario
+
+1. **Instituciones de Educación Superior**
+
+   * Universidad del Norte (sede Barranquilla)
+2. **Entidades Territoriales**
+
+   * Gobernación del Atlántico
+   * Alcaldía de Barranquilla
+3. **Organizaciones de la Sociedad Civil**
+
+   * Fundación Omacha (conservar biodiversidad regional)
+4. **Sector Productivo / Tecnología**
+
+   * Cámara de Comercio de Barranquilla (cluster TIC Caribe)
+   * Start-up local “Innovar Caribe” (desarrollo IoT)
+5. **Entidades de Conservación**
+
+   * Corporación Autónoma Regional de la Ciénaga Grande de Santa Marta (CRA)
+
+### demanda\_territorial\_seleccionada\_usuario
+
+**Atl-12**: “Incrementar los niveles de transformación digital y desarrollo de herramientas en tecnologías convergentes y 4.0 que contribuyan a la actualización de instrumentos de ordenamiento territorial y/o gobernanzas territoriales alrededor del agua y/o conservación de la biodiversidad y/o restauración de los ecosistemas en el departamento del Atlántico durante el cuatrienio 2022–2026” .
+
+### idea\_base\_proyecto\_usuario
+
+Desarrollar e implementar una **plataforma integrada** de monitoreo ambiental basada en:
+
+* **Sensores inteligentes IoT** desplegados en humedales y ríos clave.
+* **Drones autónomos** para teledetección y supervisión de zonas de difícil acceso.
+* **Módulo de IA** que analice en tiempo real la calidad del agua (pH, turbidez, contaminantes), estado de cobertura vegetal (manglares, caños) y ofrezca alertas tempranas de riesgo.
+* **Portal web y app móvil** para que autoridades y comunidades accedan a datos geoespaciales y participen en la toma de decisiones del ordenamiento territorial. .
+
+### duracion\_proyecto\_usuario
+
+**36 meses**
+
+### presupuesto\_estimado\_usuario
+
+**COP 8.500 millones**
+
+* Diseño e instalación de 60 sensores IoT: COP 2.550 M
+* Adquisición y operación de 4 drones de mapeo: COP 1.700 M
+* Desarrollo de software (IA + plataforma web/móvil): COP 1.275 M
+* Personal técnico y académicos (equipo multidisciplinar): COP 2.125 M
+* Formación y divulgación comunitaria: COP 850 M
+
+### equipo\_tecnico\_clave\_usuario
+
+| Rol                                                 | Nombre / Institución                         |
+| --------------------------------------------------- | -------------------------------------------- |
+| **Director de Proyecto** (PhD Ingeniería Ambiental) | Dr. María Pérez – UA                         |
+| **Coordinador de IA y Datos**                       | Ing. Juan Rodríguez – Innovar Caribe         |
+| **Ingeniero IoT**                                   | Ing. Laura Martínez – Universidad del Norte  |
+| **Especialista en Teledetección**                   | Dr. Andrés Gómez – CRA                       |
+| **Hidrólogo**                                       | MSc. Carolina Torres – Gobernación Atlántico |
+| **Responsable de Vinculación Comunitaria**          | Lic. Pedro Salcedo – Fundación Omacha        |
+
+### justificaciones\_costos\_usuario
+
+* **Sensores IoT**: dispositivos robustos para operación en zonas húmedas y corrosivas (30% del presupuesto).
+* **Drones**: mapeo de alta resolución y vuelos de seguridad para monitoreo periódico (20%).
+* **Software y IA**: integración de datos, modelado predictivo y desarrollo de front-end (15%).
+* **Personal**: contratación de especialistas, asistentes de campo y comunidad local (25%).
+* **Divulgación**: talleres participativos y material educativo para CODECTI y comunidades (10%).
+
+### indicadores\_propios\_usuario
+
+1. **Sensores desplegados:**
+
+   * Meta: 60 unidades en 10 puntos estratégicos
+2. **Cobertura de teledetección:**
+
+   * Meta: 1.000 km² de humedales monitoreados
+3. **Calidad de agua mejorada:**
+
+   * Reducción de turbidez media en 15% (NTU)
+4. **Talleres comunitarios realizados:**
+
+   * 12 encuentros, 300 participantes
+5. **Alertas tempranas activadas:**
+
+   * ≥ 90% de efectividad en notificaciones a autoridades
+
+### restricciones\_internas\_usuario
+
+* **Procesos de contratación y liberación de cofinanciación** con la Gobernación (pueden demorar hasta 3 meses).
+* **Obtención de licencias aeronáuticas y ambientales** para drones (hasta 2 meses de gestión).
+* **Integración de datos legados** de plataformas SIGP y CRA—requerirá adaptadores de formato.
+* **Capacidad de Internet y cobertura 4G** en zonas rurales, mitigable con enlaces satelitales de respaldo.
+
+---
+
+Con esta estructura, el proyecto articula las **líneas temáticas** de tecnologías 4.0 para restauración y monitoreo (Línea 5) con la **demanda Atl-12** del Atlántico, integrando actores reales del departamento y todos los elementos solicitados.
