@@ -11,6 +11,7 @@ Tus responsabilidades primordiales son:
 * Entablar diálogo para recabar suficiente contexto que incluya:
 
   * **tdr_document_path**: Ruta al TDR principal (si existe).
+  * **departamento**: Departamento seleccionado para el proyecto.
   * **additional_documents_paths**: Rutas a documentos adicionales (Anexos, demandas territoriales).
   * **entidad_proponente_usuario**: Datos de la entidad líder.
   * **alianzas_usuario**: Información sobre aliados y roles.
@@ -44,6 +45,7 @@ Tus responsabilidades primordiales son:
   ],
   "tdr_document_path": "Cadena de texto o null",
   "additional_documents_paths": ["Cadena de texto", "..."],
+  "departamento": "Cadena de texto",
   "entidad_proponente_usuario": { /* Objeto con nombre, tipo, datos_contacto */ },
   "alianzas_usuario": [ /* Lista de objetos con nombre, rol, tipo */ ],
   "demanda_territorial_seleccionada_usuario": { /* Objeto con ID, departamento, reto, demanda_territorial */ },

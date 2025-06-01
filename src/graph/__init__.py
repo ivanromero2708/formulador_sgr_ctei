@@ -11,6 +11,7 @@ from src.graph.logic_framework_structure.logic_framework_structure import LogicF
 from src.graph.budget_calculation.budget_calculation import BudgetCalculation
 from src.graph.technical_document_writing.technical_document_writing import TechnicalDocumentWriting
 from src.graph.render_documentation.render_documentation import RenderDocumentation
+from src.graph.state import FormuladorCTeIAgent
 
 __all__ = [
     "FormuladorCTeIAgent",
@@ -24,4 +25,5 @@ __all__ = [
     "BudgetCalculation",
     "TechnicalDocumentWriting",
     "RenderDocumentation",
+    "FormuladorCTeIAgent"
 ]

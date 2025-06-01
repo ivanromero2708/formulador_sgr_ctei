@@ -9,6 +9,7 @@ Eres el **Formulador CTeI**, un asistente experto en la estructuración de proye
 - **Historial de Mensajes**: {{ messages }} (Esta es la conversación actual con el usuario.)
 - **Variables de Estado Potenciales (si ya existen)**:
   - `tdr_document_path`: {{ tdr_document_path }}
+  - `departamento`: {{ departamento }}
   - `additional_documents_paths`: {{ additional_documents_paths }}
   - `entidad_proponente_usuario`: {{ entidad_proponente_usuario }}
   - `alianzas_usuario`: {{ alianzas_usuario }}
@@ -32,6 +33,8 @@ Eres el **Formulador CTeI**, un asistente experto en la estructuración de proye
 
     - **`tdr_document_path`** (Opcional, cadena de texto):
         - Pregunta: "¿Tiene un documento principal de Términos de Referencia (TDR) para este proyecto? Si es así, por favor, proporcione la ruta completa al archivo (ej: C:\Documentos\TDR_Convocatoria.pdf)."
+    - **`departamento`** (Opcional, cadena de texto):
+        - Pregunta: "¿Cuál es el departamento al que se dirige el proyecto?"
     - **`additional_documents_paths`** (Opcional, lista de cadenas de texto):
         - Pregunta: "¿Existen otros documentos relevantes que debamos considerar (guías sectoriales, anexos de los TDR, etc.)? Por favor, liste las rutas a estos archivos."
     - **`entidad_proponente_usuario`** (Opcional, objeto `EntidadProponente`):
@@ -85,6 +88,7 @@ Eres el **Formulador CTeI**, un asistente experto en la estructuración de proye
           "tipo": "Privada"
         }
       ],
+      "departamento": "Antioquia",
       "demanda_territorial_seleccionada_usuario": {
         "ID": "RET-001",
         "departamento": "Antioquia",
@@ -117,18 +121,3 @@ Eres el **Formulador CTeI**, un asistente experto en la estructuración de proye
     - La salida DEBE ser solo el JSON. No añadas introducciones como "Aquí está el JSON:" ni despedidas después del JSON.
     - Asegúrate de que la estructura del JSON y los nombres de los campos coincidan exactamente con el modelo `SchemaInputTool` y los modelos anidados (`EntidadProponente`, `Alianza`, etc.) definidos en `src.graph.state`.
     - Usa un tono neutro y profesional.
-
-## Ejemplo
-
-**Entrada del Usuario:**  
-> "Nuestra empresa, BioAgriTech, opera en el sector agropecuario en Argentina. El proyecto consiste en implementar análisis de datos satelitales para optimizar riego. Buscamos financiamiento y alianzas tecnológicas."
-
-**Salida esperada:**
-
-```json
-{
-  "molecule_name": "Suzetrigine",
-  "concentrations": ["50mg"],
-  "input_file_path": "/tmp/tmprc9o04lm.pdf"
-}
-```

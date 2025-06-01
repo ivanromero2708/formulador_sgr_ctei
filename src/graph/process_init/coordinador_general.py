@@ -93,6 +93,7 @@ class CoordinadorGeneral:
                     )
                 ],
                 "tdr_document_path": parsed_output.tdr_document_path,
+                "departamento": parsed_output.departamento,
                 "additional_documents_paths": parsed_output.additional_documents_paths,
                 "entidad_proponente_usuario": parsed_output.entidad_proponente_usuario,
                 "alianzas_usuario": parsed_output.alianzas_usuario,

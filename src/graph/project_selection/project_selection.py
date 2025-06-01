@@ -1,26 +1,29 @@
-from ..state import FormuladorCTeIAgent
+from src.graph.state import FormuladorCTeIAgent
+from langgraph.types import Command, interrupt
+from langchain_core.runnables import RunnableConfig
+from typing import Literal
+
 
 class ProjectSelection:
     def __init__(self):
         # Initialization for ProjectSelection node
         pass
-
-    def run(self, state: FormuladorCTeIAgent) -> FormuladorCTeIAgent:
-        print("---EJECUTANDO NODO: ProjectSelection---")
-        # This node would typically involve user interaction to select one
-        # of the generated project concepts (from state.conceptos_proyecto_generados).
-        # For now, it might select the first one by default or require external input.
-
-        # conceptos = state.get('conceptos_proyecto_generados', [])
-        # if conceptos:
-        #     selected_id = conceptos[0].id_concepto # Placeholder: select the first
-        #     state['concepto_proyecto_seleccionado_id'] = selected_id
-        #     state['proyecto_seleccionado_detalle'] = conceptos[0]
-        #     print(f"Proyecto seleccionado (ID): {selected_id}")
-        # else:
-        #     error_msg = "No hay conceptos de proyecto generados para seleccionar."
-        #     state['error_messages'] = (state.get('error_messages', []) + [error_msg])
-        #     print(f"Error: {error_msg}")
-
-        state['current_node_execution'] = self.__class__.__name__
-        return state
+    
+    def formulator_feedback(self, state: FormuladorCTeIAgent, config: RunnableConfig):
+        human_response = interrupt(
+            {
+                "conceptos_enriquecidos": state.get("conceptos_enriquecidos", []),
+                "instructions": (
+                    "Por favor seleccione el proyecto deseado y edite los componentes si aplica"
+                )
+            }
+        )
+        return Command(
+            goto = "logic_framework_structure",
+            update = {
+                "concepto_seleccionado": human_response["concepto_seleccionado"],
+            }
+        )
+    
+    def run(self, state: FormuladorCTeIAgent,  config: RunnableConfig) -> Command[Literal["logic_framework_structure"]]:
+        return self.formulator_feedback(state, config)

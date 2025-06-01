@@ -1,10 +1,20 @@
 from langgraph.prebuilt.chat_agent_executor import AgentState
 from typing import Dict, List, Optional, Any, Literal, Annotated # Ensured Annotated is here
-from .project_structure.deep_research.deep_research import PerfilEntidades # Added import
 from pydantic import BaseModel, Field
 import operator
 
 # Pydantic Models for State Variables
+
+class PerfilEntidad(BaseModel):
+    nombre: str = Field(description="Nombre de la entidad")
+    tipo: Literal["Proponente", "Aliado"] = Field(description="Tipo de entidad")
+    
+    areas_expertise_relevante: List[str] = Field(default_factory=list, description="Áreas de expertise relevantes")
+    capacidades_tecnicas: List[str] = Field(default_factory=list, description="Capacidades técnicas relevantes")
+    lineas_investigacion_relevantes: List[str] = Field(default_factory=list, description="Líneas de investigación relevantes de la institución")
+    logros_relevantes: List[str] = Field(default_factory=list, description="Logros relevantes de la institución relacionados con las líneas temáticas del proyecto")
+    
+    experiencia_proyectos_relacionados: List[str] = Field(default_factory=list, description="Experiencia en proyectos relacionados")
 
 class EntidadProponente(BaseModel):
     """Datos de la entidad proponente del proyecto"""
@@ -131,6 +141,7 @@ from langchain_core.messages.base import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import field_validator
 from typing import Annotated, Sequence
+import operator
 
 class CoordinadorGeneralOutput(BaseModel):
     """
@@ -207,17 +218,17 @@ class FormuladorCTeIAgent(AgentState):
     # Variables extraídas y estructuradas del TDR
     secciones_tdr: Annotated[List[SeccionTDR], operator.add] = Field(default_factory=list, description="Secciones del TDR") # Changed ... to default_factory=list
     
+    perfil_entidades: List[PerfilEntidad]
+    
     # === PROJECT IDEATION (Poblado por ProjectStructure) ===
-    conceptos_proyecto_generados: List[ConceptoProyectoGenerado] = Field(default_factory=list, description="Lista de ≥3 conceptos de proyecto generados")
-
-    # === DEEP ENTITY RESEARCH (Input/Output for DeepResearchEntidades Swarm) ===
-    entidades: List[Dict[str, Any]] = Field(default_factory=list, description="Lista de entidades a investigar con sus detalles básicos (nombre, tipo, etc.)")
-    perfil_entidades: Optional[PerfilEntidades] = Field(default=None, description="Perfiles detallados de las entidades investigadas, resultado del swarm de investigación profunda")
+    conceptos: Annotated[List[ConceptoProyectoGenerado], operator.add] = Field(default_factory=list, description="Lista de ≥3 conceptos de proyecto generados")
+    conceptos_enriquecidos: Annotated[List[ConceptoProyectoGenerado], operator.add] = Field(default_factory=list, description="Lista de ≥3 conceptos de proyecto generados")
     
     # === PROJECT SELECTION (Poblado por ProjectSelection) ===
     concepto_proyecto_seleccionado_id: Optional[str] = Field(default=None, description="ID del concepto de proyecto elegido por el usuario")
     proyecto_seleccionado_detalle: Optional[ConceptoProyectoGenerado] = Field(default=None, description="Detalle completo del proyecto seleccionado")
-
+    concepto_seleccionado: Optional[ConceptoProyectoGenerado] = Field(default=None, description="Concepto seleccionado por el usuario")
+    
     # === DETAILED STRUCTURING (Poblado por nodos subsecuentes) ===
     marco_logico_final: Optional[MarcoLogicoEstructura] = Field(default=None)
     presupuesto_detallado_final: Optional[PresupuestoDetallado] = Field(default=None)
