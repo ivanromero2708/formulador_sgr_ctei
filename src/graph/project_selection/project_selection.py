@@ -19,11 +19,11 @@ class ProjectSelection:
             }
         )
         return Command(
-            goto = "logic_framework_structure",
+            goto = "project_initiation",
             update = {
                 "concepto_seleccionado": human_response["concepto_seleccionado"],
             }
         )
     
-    def run(self, state: FormuladorCTeIAgent,  config: RunnableConfig) -> Command[Literal["logic_framework_structure"]]:
+    def run(self, state: FormuladorCTeIAgent,  config: RunnableConfig) -> Command[Literal["project_initiation"]]:
         return self.formulator_feedback(state, config)

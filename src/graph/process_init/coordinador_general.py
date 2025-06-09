@@ -21,7 +21,7 @@ class CoordinadorGeneral:
     def run(self, state: FormuladorCTeIAgent, config: RunnableConfig) -> Command[Literal["__end__", "tdr_vectorstore"]]:
         # Inicialización de la configuración del agente
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
-        llm_config_name = agent_configuration.gpt4omini
+        llm_config_name = agent_configuration.gpt41mini
 
         # Obtener la instancia del LLM
         llm_instance = create_llm_model(llm_config_name)

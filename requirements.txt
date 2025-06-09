@@ -12,6 +12,8 @@ langsmith
 langchain-core
 langchain-openai
 langgraph
+langgraph-cli[inmem]
+langgraph-cli
 langgraph-swarm
 langchain-community
 langchain-experimental

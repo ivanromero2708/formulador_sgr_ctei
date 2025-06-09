@@ -21,7 +21,7 @@ class SchemaEntradaBuilder:
         
         # Inicialización de la configuración del agente
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
-        agent_model = agent_configuration.gpt4omini
+        agent_model = agent_configuration.gpt41mini
         
         return create_react_agent(
             create_llm_model(model=agent_model),

@@ -96,7 +96,7 @@ def web_rag_pipeline_tool(website_url: str, search_query: str) -> dict:
 
     # --- Step 2: Split the content into chunks ---
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,
+        chunk_size=1000,
         chunk_overlap=200,
         separators=["\n\n", "\n", " "]
     )
@@ -107,7 +107,7 @@ def web_rag_pipeline_tool(website_url: str, search_query: str) -> dict:
         return "Document splitting returned no chunks."
 
     # --- Step 3: Create vector store from the chunks ---
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small", chunk_size=256)  # Use smaller chunk_size for API batching
     vector_store = InMemoryVectorStore.from_documents(
         embedding=embeddings,
         documents=doc_splits
@@ -116,7 +116,7 @@ def web_rag_pipeline_tool(website_url: str, search_query: str) -> dict:
     # --- Step 4: Perform max marginal relevance search ---
     try:
         final_docs = vector_store.max_marginal_relevance_search(
-            search_query, k=7
+            search_query, k=10
         )
         document_context = "\n\n".join(
             f"Source: {doc.metadata.get('source', 'No URL available')}\nContent: {doc.page_content}"
