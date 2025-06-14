@@ -437,6 +437,8 @@ class CoordinadorGeneralOutput(BaseModel):
     # === USER INPUTS (Recibido de SchemaEntrada) ===
     tdr_document_path: Optional[str] = Field(default=None, description="Path al documento TDR principal (PDF, DOCX)")
     additional_documents_paths: List[str] = Field(default_factory=list, description="Paths a otros documentos de entrada (guías sectoriales, anexos TDR)")
+    plan_desarrollo_nacional: Optional[str] = Field(default=None, description="Path al documento Plan Desarrollo Nacional")
+    plan_desarrollo_departamental: Optional[str] = Field(default=None, description="Path al documento Plan Desarrollo Departamental")
     
     # Datos específicos del usuario procesados desde raw_user_input_data
     departamento: str = Field(description="Departamento seleccionado para el proyecto")
@@ -486,7 +488,11 @@ class FormuladorCTeIAgent(AgentState):
     # === USER INPUTS (Recibido de SchemaEntrada) ===
     tdr_document_path: Optional[str] = Field(default=None, description="Path al documento TDR principal (PDF, DOCX)")
     additional_documents_paths: List[str] = Field(default_factory=list, description="Paths a otros documentos de entrada (guías sectoriales, anexos TDR)")
-    
+    plan_desarrollo_nacional: Optional[str] = Field(default=None, description="Path al documento del plan de desarrollo nacional (PDF, DOCX)")
+    plan_desarrollo_departamental: Optional[str] = Field(default=None, description="Path al documento del plan de desarrollo departamental (PDF, DOCX)")
+    plan_desarrollo_nacional_vectorstore: Optional[str] = Field(default=None, description="Path al vectorstore del plan de desarrollo nacional")
+    plan_desarrollo_departamental_vectorstore: Optional[str] = Field(default=None, description="Path al vectorstore del plan de desarrollo departamental")
+        
     # Datos específicos del usuario procesados desde raw_user_input_data
     departamento: str = Field(description="Departamento seleccionado para el proyecto")
     entidad_proponente_usuario: Optional[EntidadProponente] = Field(description="Información básica de la entidade proponente del proyecto")

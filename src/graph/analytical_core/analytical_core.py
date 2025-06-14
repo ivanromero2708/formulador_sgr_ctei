@@ -3,10 +3,21 @@ from langgraph.types import Command
 from langchain_core.runnables import RunnableConfig
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph import StateGraph
+from langgraph.types import Command
 
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List
+from langchain_community.document_loaders import PyPDFLoader, UnstructuredWordDocumentLoader
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import SKLearnVectorStore
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document
+from pathlib import Path
+from langchain_core.runnables import RunnableConfig
+from langgraph.types import Command
+import os
+import uuid
 
 from src.graph.state import (
     FormuladorCTeIAgent, 
@@ -24,6 +35,8 @@ from src.config.configuration import MultiAgentConfiguration
 from src.llms.llm import create_llm_model
 from src.prompts.template import apply_prompt_template
 from src.tools.local_research_query_tool import local_research_query_tool
+from src.tools.serper_dev_tool import serper_dev_search_tool
+from src.tools.web_rag_pipeline import web_rag_pipeline_tool
 
 class ProblemaIdentificacionOutput(BaseModel):
     problema_central: str
@@ -138,6 +151,8 @@ class AnalisisDeAlternativas(BaseModel):
         return self
 
 class AnalyticalCoreState(FormuladorCTeIAgent):
+    plan_desarrollo_nacional_vectorstore: str
+    plan_desarrollo_departamental_vectorstore: str
     problema_central: str
     descripcion_problema: str
     magnitud_problema: str
@@ -157,27 +172,114 @@ class AnalyticalCoreState(FormuladorCTeIAgent):
 
 class AnalyticalCore:
     def __init__(self) -> None:
-        self.tools_problem_identification_agent = [local_research_query_tool]
-        self.tools_stakeholder_analysis_agent = []
-        self.tools_population_analysis_agent = []
+        self.tools_problem_identification_agent = [serper_dev_search_tool, web_rag_pipeline_tool, local_research_query_tool]
+        self.tools_stakeholder_analysis_agent = [local_research_query_tool]
+        self.tools_population_analysis_agent = [serper_dev_search_tool, web_rag_pipeline_tool, local_research_query_tool]
         self.tools_objective_analysis_agent = []
         self.tools_alternative_analysis_agent = []
+
+    def load_document(self, file_path: str) -> List[Document]:
+        """Loads document content from the given file path."""
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".pdf":
+            loader = PyPDFLoader(file_path=file_path)
+        elif ext == ".docx":
+            loader = UnstructuredWordDocumentLoader(file_path)
+        else:
+            raise ValueError(f"Unsupported file format: {ext}. Please provide a PDF or DOCX file.")
+        
+        docs = loader.load()
+        if not docs:
+            raise ValueError(f"No content could be extracted from {file_path}")
+        
+        return docs
+
+    def split_documents(self, docs):
+        """
+        Divide el texto en chunks para crear embeddings.
+        :param docs: Documentos (chunks).
+        :return: Lista de documentos (chunks).
+        """
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=800,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", " ", ""]
+        )
+        return splitter.split_documents(docs)
+
+    def create_vectorstore(self, splits):
+        """
+        Crea y persiste un vector store a partir de los chunks de la transcripción.
+        :param splits: Lista de chunks.
+        :return: vectorstore y la ruta de persistencia.
+        """
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        # Generate a unique filename using UUID
+        unique_filename = f"vectorstore_{uuid.uuid4()}.parquet"
+        # Usar Path para generar el directorio y convertirlo a POSIX (con "/" como separador)
+        persist_path = Path(os.getcwd()) / "temp_uploads" / unique_filename
+        
+        # Ensure the temp_uploads directory exists
+        persist_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        persist_path_str = persist_path.as_posix()  # Se convierte a formato POSIX ("/")
+
+        vectorstore = SKLearnVectorStore.from_documents(
+            documents=splits,
+            embedding=embeddings,
+            persist_path=persist_path_str, # Use the string version of the path
+            serializer="parquet",
+        )
+
+        vectorstore.persist()
+        return vectorstore, persist_path_str
     
-    def problem_identification(self, config: RunnableConfig):
+    def RAG_pipeline(self, file_path):
+        documents = self.load_document(file_path)
+        splits = self.split_documents(documents)
+        _, persist_path = self.create_vectorstore(splits)
+        return persist_path
+        
+    def plan_desarrollo_vectorstore(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["problem_identification"]]:
+        plan_desarrollo_nacional = state.get("plan_desarrollo_nacional")
+        persist_path_plan_desarrollo_nacional = self.RAG_pipeline(plan_desarrollo_nacional)
+        
+        plan_desarrollo_departamental = state.get("plan_desarrollo_departamental")
+        persist_path_plan_desarrollo_departamental = self.RAG_pipeline(plan_desarrollo_departamental)
+        
+        return Command(
+            update={
+                "plan_desarrollo_nacional_vectorstore": persist_path_plan_desarrollo_nacional,
+                "plan_desarrollo_departamental_vectorstore": persist_path_plan_desarrollo_departamental,
+            },
+            goto="problem_identification"
+        )
+    
+    def problem_identification(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["stakeholder_analysis"]]:
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
         
-        problem_identification_agent_builder = create_react_agent(
+        problem_identification_agent_graph = create_react_agent(
             create_llm_model(model=agent_model),
             tools=self.tools_problem_identification_agent,
             prompt=lambda state: apply_prompt_template("problem_identification_agent", state),
             response_format=ProblemaIdentificacionOutput,
             name="problem_identification_agent",
-            state_schema=AnalyticalCoreState,
         )
-        return problem_identification_agent_builder
+        
+        result = problem_identification_agent_graph.invoke(state, config)
+        
+        return Command(
+            update={
+                "problema_central": result.get("structured_response").problema_central,
+                "descripcion_problema": result.get("structured_response").descripcion_problema,
+                "magnitud_problema": result.get("structured_response").magnitud_problema,
+                "arbol_problema": result.get("structured_response").arbol_problema,
+            },
+            goto="stakeholder_analysis"
+        )
     
-    def stakeholder_analysis(self, config: RunnableConfig):
+    def stakeholder_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["population_analysis"]]:
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
         
@@ -187,11 +289,18 @@ class AnalyticalCore:
             prompt=lambda state: apply_prompt_template("stakeholder_analysis_agent", state),
             response_format=AnalisisParticipantesOutput,
             name="stakeholder_analysis_agent",
-            state_schema=AnalyticalCoreState,
         )
-        return stakeholder_analysis_agent_builder
+        
+        result = stakeholder_analysis_agent_builder.invoke(state, config)
+        
+        return Command(
+            update={
+                "participantes": result.get("structured_response").participantes,
+            },
+            goto="population_analysis"
+        )
     
-    def population_analysis(self, config: RunnableConfig):
+    def population_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["objective_analysis"]]:
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
         
@@ -201,13 +310,24 @@ class AnalyticalCore:
             prompt=lambda state: apply_prompt_template("population_analysis_agent", state),
             response_format=AnalisisPoblacion,
             name="population_analysis_agent",
-            state_schema=AnalyticalCoreState,
         )
-        return population_analysis_agent_builder
+        
+        result = population_analysis_agent_builder.invoke(state, config)
+        
+        return Command(
+            update={
+                "poblacion_afectada": result.get("structured_response").poblacion_afectada,
+                "poblacion_objetivo": result.get("structured_response").poblacion_objetivo,
+                "caracteristicas_demograficas_objetivo": result.get("structured_response").caracteristicas_demograficas_objetivo,
+                "enfoque_diferencial": result.get("structured_response").enfoque_diferencial,
+                "cumple_porcentaje_vinculacion_diferencial": result.get("structured_response").cumple_porcentaje_vinculacion_diferencial,
+            },
+            goto="objective_analysis"
+        )
     
-    def objective_analysis(self, config: RunnableConfig):
+    def objective_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["alternative_analysis"]]:
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
-        agent_model = agent_configuration.gpt41mini
+        agent_model = agent_configuration.o4mini
         
         objective_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
@@ -215,13 +335,22 @@ class AnalyticalCore:
             prompt=lambda state: apply_prompt_template("objective_analysis_agent", state),
             response_format=AnalisisDeObjetivos,
             name="objective_analysis_agent",
-            state_schema=AnalyticalCoreState,
         )
-        return objective_analysis_agent_builder
+        
+        result = objective_analysis_agent_builder.invoke(state, config)
+        
+        return Command(
+            update={
+                "objetivo_general": result.get("structured_response").objetivo_general,
+                "objetivos_especificos": result.get("structured_response").objetivos_especificos,
+                "arbol_de_objetivos": result.get("structured_response").arbol_de_objetivos,
+            },
+            goto="alternative_analysis"
+        )
     
-    def alternative_analysis(self, config: RunnableConfig):
+    def alternative_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["__end__"]]:
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
-        agent_model = agent_configuration.gpt41mini
+        agent_model = agent_configuration.o4mini
         
         alternative_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
@@ -229,13 +358,22 @@ class AnalyticalCore:
             prompt=lambda state: apply_prompt_template("alternative_analysis_agent", state),
             response_format=AnalisisDeAlternativas,
             name="alternative_analysis_agent",
-            state_schema=AnalyticalCoreState,
         )
-        return alternative_analysis_agent_builder
+        
+        result = alternative_analysis_agent_builder.invoke(state, config)
+        
+        return Command(
+            update={
+                "alternativas": result.get("structured_response").alternativas, 
+                "analisis_tecnico_seleccionada": result.get("structured_response").analisis_tecnico_seleccionada,
+            },
+            goto="__end__"
+        )
     
     def build_graph(self):
         builder = StateGraph(AnalyticalCoreState)
-        builder.set_entry_point("problem_identification")
+        builder.set_entry_point("plan_desarrollo_vectorstore")
+        builder.add_node("plan_desarrollo_vectorstore", self.plan_desarrollo_vectorstore)
         builder.add_node("problem_identification", self.problem_identification)
         builder.add_node("stakeholder_analysis", self.stakeholder_analysis)
         builder.add_node("population_analysis", self.population_analysis)
@@ -244,6 +382,7 @@ class AnalyticalCore:
         return builder.compile()
     
     def run(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["project_design"]]:
+                
         graph = self.build_graph()
         
         invoke_config = config.copy() if config else {}

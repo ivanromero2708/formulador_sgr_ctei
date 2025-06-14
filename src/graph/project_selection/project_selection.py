@@ -21,7 +21,7 @@ class ProjectSelection:
         return Command(
             goto = "project_initiation",
             update = {
-                "concepto_seleccionado": human_response["concepto_seleccionado"],
+                "concepto_seleccionado": human_response,
             }
         )
     

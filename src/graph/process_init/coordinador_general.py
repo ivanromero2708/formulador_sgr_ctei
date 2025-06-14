@@ -51,7 +51,7 @@ class CoordinadorGeneral:
 
             return Command(
                 update={
-                    "messages": [AIMessage(content=error_content, name="coordinador_general_error")],
+                    "messages": [AIMessage(content=error_content, name="coordinador_general")],
                     "error_messages": updated_error_messages,
                 },
                 goto="__end__" 
@@ -60,22 +60,7 @@ class CoordinadorGeneral:
         parsed_output: CoordinadorGeneralOutput = extraction_result["responses"][0]
 
         # El contenido para el AIMessage en el estado provendrá del campo 'messages' dentro de parsed_output
-        response_content_for_aimessage = ""
-        if parsed_output.messages and isinstance(parsed_output.messages, Sequence) and len(parsed_output.messages) > 0:
-            # Asegurarse de que el último mensaje tenga contenido y sea un string
-            last_message_in_output = parsed_output.messages[-1]
-            if hasattr(last_message_in_output, 'content') and isinstance(last_message_in_output.content, str):
-                response_content_for_aimessage = last_message_in_output.content
-            elif isinstance(last_message_in_output, str): # Si el mensaje es directamente un string
-                 response_content_for_aimessage = last_message_in_output
-        
-        if not response_content_for_aimessage:
-            # Fallback si el LLM no populó el campo 'messages' dentro de CoordinadorGeneralOutput como se esperaba.
-            # Usar una representación de la tool call de trustcall como contenido.
-            if extraction_result["messages"] and extraction_result["messages"][0].tool_calls:
-                 response_content_for_aimessage = f"Tool call to {CoordinadorGeneralOutput.__name__} with args: {extraction_result['messages'][0].tool_calls[0]['args']}"
-            else:
-                 response_content_for_aimessage = "CoordinadorGeneral procesó la entrada."
+        response_content_for_aimessage = parsed_output.messages[-1].content
 
         # Determinar los nodos de destino
         if parsed_output.hand_off_to_planner:
@@ -83,24 +68,40 @@ class CoordinadorGeneral:
         else:
             goto = "__end__"
 
+        # Construct the update payload conditionally to avoid overwriting existing state with None
+        update_payload = {
+            "messages": [
+                AIMessage(
+                    content=response_content_for_aimessage,
+                    name="coordinador_general",
+                )
+            ]
+        }
+
+        # Define which attributes from parsed_output should be considered for updating the state.
+        # These correspond to the fields in CoordinadorGeneralOutput that map to FormuladorCTeIAgent state.
+        fields_to_potentially_update = [
+            "tdr_document_path", "departamento", "plan_desarrollo_nacional",
+            "plan_desarrollo_departamental", "additional_documents_paths",
+            "entidad_proponente_usuario", "alianzas_usuario",
+            "demanda_territorial_seleccionada_usuario", "idea_base_proyecto_usuario",
+            "duracion_proyecto_usuario", "presupuesto_estimado_usuario"
+        ]
+
+        for field_name in fields_to_potentially_update:
+            if hasattr(parsed_output, field_name):
+                value = getattr(parsed_output, field_name)
+                # Only update the state if the parsed output has a non-None value for the field.
+                # This prevents accidental clearing of existing state data.
+                # For list fields with default_factory=list in CoordinadorGeneralOutput (like additional_documents_paths),
+                # if the LLM doesn't provide them, `value` will be `[]`. `[] is not None` is true, so the state will be updated to `[]`.
+                # This is generally the expected behavior: if the model is asked to extract a list and returns/defaults to an empty list, the state reflects that.
+                # For Optional[List[...]] fields (like alianzas_usuario), if the LLM doesn't provide them, `value` will be `None`, and the state won't be updated.
+                if value is not None:
+                    update_payload[field_name] = value
+
         # Devolver el comando con la actualización de estado y nodos de destino
         return Command(
-            update={
-                "messages": [
-                    AIMessage(
-                        content=response_content_for_aimessage,
-                        name="coordinador_general",
-                    )
-                ],
-                "tdr_document_path": parsed_output.tdr_document_path,
-                "departamento": parsed_output.departamento,
-                "additional_documents_paths": parsed_output.additional_documents_paths,
-                "entidad_proponente_usuario": parsed_output.entidad_proponente_usuario,
-                "alianzas_usuario": parsed_output.alianzas_usuario,
-                "demanda_territorial_seleccionada_usuario": parsed_output.demanda_territorial_seleccionada_usuario,
-                "idea_base_proyecto_usuario": parsed_output.idea_base_proyecto_usuario,
-                "duracion_proyecto_usuario": parsed_output.duracion_proyecto_usuario,
-                "presupuesto_estimado_usuario": parsed_output.presupuesto_estimado_usuario,
-            },
+            update=update_payload,
             goto=goto
         )

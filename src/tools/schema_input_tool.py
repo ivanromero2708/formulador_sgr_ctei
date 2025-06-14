@@ -7,6 +7,8 @@ class SchemaInputTool(BaseModel):
     # === USER INPUTS (Recibido de SchemaEntrada) ===
     tdr_document_path: Optional[str] = Field(default=None, description="Path al documento TDR principal (PDF, DOCX)")
     additional_documents_paths: List[str] = Field(default_factory=list, description="Paths a otros documentos de entrada (guías sectoriales, anexos TDR)")
+    plan_desarrollo_nacional: Optional[str] = Field(default=None, description="Path al documento del plan de desarrollo nacional (PDF, DOCX)")
+    plan_desarrollo_departamental: Optional[str] = Field(default=None, description="Path al documento del plan de desarrollo departamental (PDF, DOCX)")
     
     # Datos específicos del usuario procesados desde raw_user_input_data
     entidad_proponente_usuario: Optional[EntidadProponente] = Field(default=None)

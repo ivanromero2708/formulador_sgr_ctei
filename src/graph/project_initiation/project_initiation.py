@@ -62,7 +62,7 @@ class ProjectInitiation:
     def loading_research_groups_info(self, state: ProjectInitiationState, config: RunnableConfig) -> Command[Literal["project_member_analysis"]]:
         human_response = interrupt(
             {
-                "concepto_seleccionado": state.get("concepto_seleccionado", []),
+                "grupos_investigacion_proyecto": state.get("grupos_investigacion_proyecto", []),
                 "instructions": (
                     "Por favor indique los grupos de investigación que participarán en el proyecto."
                 )
