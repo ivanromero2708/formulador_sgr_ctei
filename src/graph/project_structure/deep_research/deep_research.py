@@ -10,7 +10,7 @@ from src.config.configuration import MultiAgentConfiguration
 from src.prompts.prompts_concept_generation import PROMPT_SYSTEM_PLANNER, PROMPT_SYSTEM_WEB_RESEARCH
 from src.llms.llm import create_llm_model
 from src.tools.serper_dev_tool import serper_dev_search_tool
-from src.tools.web_rag_pipeline import web_rag_pipeline_tool
+from src.tools.web_rag_pipeline_copy import web_rag_pipeline_tool
 
 
 from pydantic import BaseModel, Field

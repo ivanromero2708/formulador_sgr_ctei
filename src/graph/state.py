@@ -167,23 +167,6 @@ class Participante(BaseModel):
         description="Lista de contribuciones o gestiones. Aplica solo para Beneficiarios y Cooperantes."
     )
 
-    @field_validator('contribuciones')
-    @classmethod
-    def validar_contribuciones_por_posicion(cls, v, info):
-        """
-        Validador para asegurar que solo los Beneficiarios y Cooperantes tengan contribuciones.
-        """
-        # Si el campo 'posicion' no está presente en los datos, no podemos validar.
-        if 'posicion' not in info.data:
-            return v
-        
-        posicion = info.data['posicion']
-        if posicion in [PosicionParticipante.OPONENTE, PosicionParticipante.PERJUDICADO] and v is not None:
-            raise ValueError(f"El campo 'contribuciones' no es aplicable para la posición '{posicion.value}'. Debe ser nulo.")
-        if posicion in [PosicionParticipante.BENEFICIARIO, PosicionParticipante.COOPERANTE] and v is None:
-             raise ValueError(f"El campo 'contribuciones' es requerido para la posición '{posicion.value}'.")
-        return v
-
 from enum import Enum
 from typing import List, Optional
 
@@ -540,6 +523,9 @@ class FormuladorCTeIAgent(AgentState):
     arbol_de_objetivos: ArbolDeObjetivos = Field(..., description="Estructura completa del árbol de objetivos (Sección 12.3).")
     alternativas: List[Alternativa] = Field(..., min_length=2, description="Lista de las alternativas identificadas (se requiere un mínimo de 2).")
     analisis_tecnico_seleccionada: str = Field(..., min_length=50, description="Análisis detallado (técnico, financiero, etc.) que justifica la selección de una alternativa y el descarte de las demás.")
+    
+    # === Phase 2: Project Design ===
+    marco_conceptual: str = Field(..., description = "Marco conceptual del proyecto")
     
     # === RENDERED OUTPUTS (Poblado por RenderDocumentation) ===
     documento_tecnico_docx_path: Optional[str] = Field(default=None, description="Path al DOCX final del Documento Técnico")

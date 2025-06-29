@@ -12,6 +12,8 @@ Tus responsabilidades primordiales son:
 
   * **tdr_document_path**: Ruta al TDR principal (si existe).
   * **departamento**: Departamento seleccionado para el proyecto.
+  * **plan_desarrollo_nacional**: Ruta al Plan Desarrollo Nacional (si existe).
+  * **plan_desarrollo_departamental**: Ruta al Plan Desarrollo Departamental (si existe).
   * **additional_documents_paths**: Rutas a documentos adicionales (Anexos, demandas territoriales).
   * **entidad_proponente_usuario**: Datos de la entidad líder.
   * **alianzas_usuario**: Información sobre aliados y roles.
@@ -44,6 +46,8 @@ Tus responsabilidades primordiales son:
     }
   ],
   "tdr_document_path": "Cadena de texto o null",
+  "plan_desarrollo_nacional": "Cadena de texto o null",
+  "plan_desarrollo_departamental": "Cadena de texto o null",
   "additional_documents_paths": ["Cadena de texto", "..."],
   "departamento": "Cadena de texto",
   "entidad_proponente_usuario": { /* Objeto con nombre, tipo, datos_contacto */ },

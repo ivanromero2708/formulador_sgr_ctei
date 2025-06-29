@@ -60,7 +60,7 @@ class ProjectInitiation:
         )
     
     def loading_research_groups_info(self, state: ProjectInitiationState, config: RunnableConfig) -> Command[Literal["project_member_analysis"]]:
-        human_response = interrupt(
+        human_response_research_group = interrupt(
             {
                 "grupos_investigacion_proyecto": state.get("grupos_investigacion_proyecto", []),
                 "instructions": (
@@ -71,7 +71,7 @@ class ProjectInitiation:
         return Command(
             goto = "project_member_analysis",
             update = {
-                "grupos_investigacion_proyecto": human_response["grupos_investigacion_proyecto"],
+                "grupos_investigacion_proyecto": human_response_research_group["grupos_investigacion_proyecto"],
             }
         )
     

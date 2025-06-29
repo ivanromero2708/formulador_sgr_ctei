@@ -34,9 +34,10 @@ from src.graph.state import (
 from src.config.configuration import MultiAgentConfiguration
 from src.llms.llm import create_llm_model
 from src.prompts.template import apply_prompt_template
+from src.prompts.prompts_analytical_core import PROBLEM_IDENTIFICATION_SYSTEM_PROMPT, STAKEHOLDER_ANALYSIS_SYSTEM_PROMPT, POPULATION_ANALYSIS_SYSTEM_PROMPT
 from src.tools.local_research_query_tool import local_research_query_tool
 from src.tools.serper_dev_tool import serper_dev_search_tool
-from src.tools.web_rag_pipeline import web_rag_pipeline_tool
+from src.tools.web_rag_pipeline_copy import web_rag_pipeline_tool
 
 class ProblemaIdentificacionOutput(BaseModel):
     problema_central: str
@@ -256,13 +257,32 @@ class AnalyticalCore:
         )
     
     def problem_identification(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["stakeholder_analysis"]]:
+        print("--- Ejecutando Nodo: Identificación del Problema ---")
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
         
+        # <<< INYECCIÓN DE ESTADO MODIFICADO >>>
+        # Para resolver el error 'UndefinedError', este agente debe usar la información inicial,
+        # ya que 'concepto_seleccionado' aún no se ha creado en este punto del flujo.
+        
+        concepto_seleccionado = state.get("concepto_seleccionado")
+        demanda_territorial_seleccionada_usuario = state.get("demanda_territorial_seleccionada_usuario")
+        departamento = state.get("departamento")
+        plan_desarrollo_nacional_vectorstore = state.get("plan_desarrollo_nacional_vectorstore")
+        plan_desarrollo_departamental_vectorstore = state.get("plan_desarrollo_departamental_vectorstore")
+        vectorstore_unificado_path = state.get("vectorstore_unificado_path")
+                
         problem_identification_agent_graph = create_react_agent(
             create_llm_model(model=agent_model),
             tools=self.tools_problem_identification_agent,
-            prompt=lambda state: apply_prompt_template("problem_identification_agent", state),
+            prompt=PROBLEM_IDENTIFICATION_SYSTEM_PROMPT.format(
+                concepto_seleccionado = concepto_seleccionado,
+                demanda_territorial_seleccionada_usuario = demanda_territorial_seleccionada_usuario,
+                departamento = departamento,
+                plan_desarrollo_nacional_vectorstore = plan_desarrollo_nacional_vectorstore,
+                plan_desarrollo_departamental_vectorstore = plan_desarrollo_departamental_vectorstore,
+                vectorstore_unificado_path = vectorstore_unificado_path,
+                ),
             response_format=ProblemaIdentificacionOutput,
             name="problem_identification_agent",
         )
@@ -280,13 +300,30 @@ class AnalyticalCore:
         )
     
     def stakeholder_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["population_analysis"]]:
+        print("--- Ejecutando Nodo: Análisis de Participantes ---")
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
+
+        # <<< INYECCIÓN DE ESTADO MODIFICADO >>>
         
+        concepto_seleccionado = state.get("concepto_seleccionado")
+        entidad_proponente_usuario = state.get("entidad_proponente_usuario")
+        alianzas_usuario = state.get("alianzas_usuario")
+        departamento = state.get("departamento")
+        plan_desarrollo_nacional_vectorstore = state.get("plan_desarrollo_nacional_vectorstore")
+        plan_desarrollo_departamental_vectorstore = state.get("plan_desarrollo_departamental_vectorstore")
+
         stakeholder_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
-            tools=[local_research_query_tool],
-            prompt=lambda state: apply_prompt_template("stakeholder_analysis_agent", state),
+            tools=self.tools_stakeholder_analysis_agent,
+            prompt=STAKEHOLDER_ANALYSIS_SYSTEM_PROMPT.format(
+                concepto_seleccionado = concepto_seleccionado,
+                entidad_proponente_usuario = entidad_proponente_usuario,
+                alianzas_usuario = alianzas_usuario,
+                departamento = departamento,
+                plan_desarrollo_nacional_vectorstore = plan_desarrollo_nacional_vectorstore,
+                plan_desarrollo_departamental_vectorstore = plan_desarrollo_departamental_vectorstore,
+                ),
             response_format=AnalisisParticipantesOutput,
             name="stakeholder_analysis_agent",
         )
@@ -301,13 +338,25 @@ class AnalyticalCore:
         )
     
     def population_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["objective_analysis"]]:
+        print("--- Ejecutando Nodo: Análisis de Población ---")
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.gpt41mini
-        
+
+        # <<< INYECCIÓN DE ESTADO MODIFICADO >>>
+        problema_central = state.get("problema_central")
+        identificacion_proyecto = state.get("identificacion_proyecto")
+        concepto_seleccionado = state.get("concepto_seleccionado")
+        participantes = state.get("participantes")
+                
         population_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
             tools=self.tools_population_analysis_agent,
-            prompt=lambda state: apply_prompt_template("population_analysis_agent", state),
+            prompt=POPULATION_ANALYSIS_SYSTEM_PROMPT.format(
+                problema_central = problema_central,
+                identificacion_proyecto = identificacion_proyecto,
+                concepto_seleccionado = concepto_seleccionado,
+                participantes = participantes,
+            ),
             response_format=AnalisisPoblacion,
             name="population_analysis_agent",
         )
@@ -326,13 +375,22 @@ class AnalyticalCore:
         )
     
     def objective_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["alternative_analysis"]]:
+        print("--- Ejecutando Nodo: Análisis de Objetivos ---")
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.o4mini
+
+        # <<< INYECCIÓN DE ESTADO MODIFICADO >>>
+        contexto_para_prompt = {
+            "arbol_problema": state.get("arbol_problema"),
+            "problema_central": state.get("problema_central"),
+            "poblacion_objetivo": state.get("poblacion_objetivo"),
+            "concepto_seleccionado": state.get("concepto_seleccionado"),
+        }
         
         objective_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
             tools=self.tools_objective_analysis_agent,
-            prompt=lambda state: apply_prompt_template("objective_analysis_agent", state),
+            prompt=lambda _: apply_prompt_template("objective_analysis_agent", contexto_para_prompt),
             response_format=AnalisisDeObjetivos,
             name="objective_analysis_agent",
         )
@@ -349,13 +407,23 @@ class AnalyticalCore:
         )
     
     def alternative_analysis(self, state: AnalyticalCoreState, config: RunnableConfig) -> Command[Literal["__end__"]]:
+        print("--- Ejecutando Nodo: Análisis de Alternativas ---")
         agent_configuration = MultiAgentConfiguration.from_runnable_config(config)
         agent_model = agent_configuration.o4mini
+
+        # <<< INYECCIÓN DE ESTADO MODIFICADO >>>
+        contexto_para_prompt = {
+            "arbol_de_objetivos": state.get("arbol_de_objetivos"),
+            "concepto_seleccionado": state.get("concepto_seleccionado"),
+            "problema_central": state.get("problema_central"),
+            "poblacion_objetivo": state.get("poblacion_objetivo"),
+            "presupuesto_estimado_usuario": state.get("presupuesto_estimado_usuario"),
+        }
         
         alternative_analysis_agent_builder = create_react_agent(
             create_llm_model(model=agent_model),
             tools=self.tools_alternative_analysis_agent,
-            prompt=lambda state: apply_prompt_template("alternative_analysis_agent", state),
+            prompt=lambda _: apply_prompt_template("alternative_analysis_agent", contexto_para_prompt),
             response_format=AnalisisDeAlternativas,
             name="alternative_analysis_agent",
         )
@@ -386,13 +454,13 @@ class AnalyticalCore:
         graph = self.build_graph()
         
         invoke_config = config.copy() if config else {}
-        invoke_config["recursion_limit"] = 100
+        invoke_config["recursion_limit"] = 300
         
         result = graph.invoke(state, invoke_config)
         
         return Command(
             update = {
-                "messages": state.get("messages", []) + [HumanMessage(content="Subgrafo de análisis completado.")],
+                "messages": state.get("messages", []) + [HumanMessage(content="Análisis del problema concluido.")],
                 "problema_central": result.get("problema_central"),
                 "descripcion_problema": result.get("descripcion_problema"),
                 "magnitud_problema": result.get("magnitud_problema"),

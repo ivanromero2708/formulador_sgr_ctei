@@ -1,3 +1,13 @@
+pillow>=9.2.0,<12.0
+proglog<=1.0.0
+
+SQLAlchemy<3,>=1.4
+aiohttp<4.0.0,>=3.8.3
+numpy>=2.1.0
+orjson>=3.9.14,<4.0.0
+ormsgpack<2.0.0,>=1.8.0
+jiter<1,>=0.4.0
+
 jinja2
 json-repair
 moviepy
@@ -21,6 +31,8 @@ langgraph-reflection
 langchain_google_genai
 langchain_chroma
 langchain_openai
+
+mistralai
 
 matplotlib
 wordcloud

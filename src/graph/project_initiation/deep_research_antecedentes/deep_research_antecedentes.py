@@ -22,7 +22,7 @@ from src.graph.state import FormuladorCTeIAgent
 from src.config.configuration import MultiAgentConfiguration
 from src.llms.llm import create_llm_model
 from src.tools.serper_dev_tool import serper_dev_search_tool
-from src.tools.web_rag_pipeline import web_rag_pipeline_tool
+from src.tools.web_rag_pipeline_copy import web_rag_pipeline_tool
 from src.prompts.prompts_project_initiation import SUPERVISOR_INSTRUCTIONS, RESEARCH_INSTRUCTIONS
 from typing import Any, Dict, List, Union
 from pydantic import BaseModel
@@ -274,7 +274,7 @@ class DeepResearchAntecedentes:
         return {
             "messages": [
                 # Enforce tool calling to either perform more search or call the Section tool to write the section
-                llm.bind_tools(research_tool_list, parallel_tool_calls=True).invoke(
+                llm.bind_tools(research_tool_list).invoke(
                     [
                         {"role": "system",
                         "content": RESEARCH_INSTRUCTIONS.format(nombre_seccion= state["section"]["name"], descripcion_seccion=state["section"]["description"])
@@ -418,7 +418,7 @@ class DeepResearchAntecedentes:
             labels=etiquetas,
             footer_lines=[
                 "Por favor, busca antecedentes relevantes a nivel internacional, nacional y departamental.",
-                "Identifica desarrollos previos, resultados, lecciones aprendidas y cómo se relacionan con el contexto regional y departamental."
+                "Identifica proyectos similares, desarrollos previos, resultados, lecciones aprendidas y cómo se relacionan con el contexto regional y departamental."
             ]
         )
 
@@ -429,8 +429,6 @@ class DeepResearchAntecedentes:
         invoke_config["recursion_limit"] = 100
         
         response = self.build_graph().invoke({"messages": msg}, invoke_config)
-
-        print(response)
         
         return Command(
             update={"antecedentes": response.get("final_report")},

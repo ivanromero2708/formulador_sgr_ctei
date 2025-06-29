@@ -8,11 +8,11 @@ from langsmith import traceable
 
 load_dotenv()
 
-@tool(description="Utiliza la API de Serper.dev para recuperar una lista de enlaces de artículos de investigación basados en una consulta de búsqueda. Retorna una lista de URLs. Si ocurre un error o se agota el tiempo, retorna una lista vacía.")
+@tool(description="Utiliza la API de Serper.dev para recuperar una lista de enlaces de internet basados en una consulta de búsqueda. Retorna una lista de URLs. Si ocurre un error o se agota el tiempo, retorna una lista vacía.")
 @traceable
 def serper_dev_search_tool(query: str, max_results: int = 5) -> List[str]:
     """
-    Utiliza la API de Serper.dev para recuperar una lista de enlaces de artículos de investigación
+    Utiliza la API de Serper.dev para recuperar una lista de enlaces de internet
     basados en una consulta de búsqueda. Retorna una lista de URLs.
     Si ocurre un error o se agota el tiempo, retorna una lista vacía.
     """

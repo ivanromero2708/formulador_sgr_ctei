@@ -6,13 +6,13 @@ from langchain_core.tools import tool
 @tool
 def local_research_query_tool(query: str, persist_path: str) -> str:
     """
-    Query the LangGraph documentation using a retriever.
-    
+    Consulta de documentos locales usando un retriever.
+        
     Args:
-        query (str): The query to search the documentation with
+        query (str): La consulta a hacer sobre la documentación
 
     Returns:
-        str: A str of the retrieved documents
+        str: Un str de los documentos recuperados
     """
     
     if persist_path == "":
