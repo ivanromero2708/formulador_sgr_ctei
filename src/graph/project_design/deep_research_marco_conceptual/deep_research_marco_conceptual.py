@@ -349,10 +349,21 @@ class DeepResearchMarcoConceptual:
         
         response = self.build_graph().invoke({"messages": [msg]}, invoke_config)
         
+        goto = [
+            Send(
+                "desarrollo_cadena_valor",
+                {
+                    "objetivo_general": state.get("objetivo_general"),
+                    "objetivo_especifico": objetivo_especifico
+                }                    
+            )
+            for objetivo_especifico in state.get("objetivos_especificos", [])
+        ]
+        
         return Command(
             update = {
                 "messages": state.get("messages", []) + [HumanMessage(content="Diseño del proyecto terminado")],
                 "marco_conceptual": response.get("reporte_final")
             },
-            goto="desarrollo_cadena_valor"
+            goto=goto
         )

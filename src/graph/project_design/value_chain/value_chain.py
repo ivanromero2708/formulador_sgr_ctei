@@ -72,7 +72,7 @@ class ProductosSugeridos(BaseModel):
 class ProductMatchingState(BaseModel):
     producto_sugerido: ProductoSugerido
     objetivo_general: str
-    objetivos_especificos: str
+    objetivo_especifico: str
 
 
 # ────────────────────────────────────────────────────────────────
@@ -131,12 +131,12 @@ class ValueChain:
         )
 
         objetivo_general = state.get("objetivo_general")
-        objetivos_especificos = state.get("objetivos_especificos", [])
+        objetivo_especifico = state.get("objetivo_especifico")
 
         system_msg = SystemMessage(
             content=PROMPT_GENERACION_PRODUCTOS.format(
                 objetivo_general_str=objetivo_general.model_dump_json(indent=2) if objetivo_general else "",
-                objetivos_especificos_str="\n".join(objetivos_especificos),
+                objetivo_especifico_str=objetivo_especifico,
             )
         )
 
@@ -180,7 +180,7 @@ class ValueChain:
 
         producto_sugerido = state.get("producto_sugerido")
         human_msg = HumanMessage(
-                content = f"Por favor procede con la identificación del producto de la MGA de acuerdo al catalogo que se encuentra vectorizado para tu consulta. Considera la siguiente información de entrada:\n\n1. Producto sugerido:\n{producto_sugerido.producto} \n\n2. Descripción del producto sugerido:\n{producto_sugerido.descripcion} \n\n3. Objetivo general del proyecto:\n{state.get("objetivo_general")} \n\n4. Objetivos específicos del proyecto:\n{state.get("objetivos_especificos")}")
+                content = f"Por favor procede con la identificación del producto de la MGA de acuerdo al catalogo que se encuentra vectorizado para tu consulta. Considera la siguiente información de entrada:\n\n1. Producto sugerido:\n{producto_sugerido.producto} \n\n2. Descripción del producto sugerido:\n{producto_sugerido.descripcion} \n\n3. Objetivo general del proyecto:\n{state.get("objetivo_general")} \n\n4. Objetivo específico del proyecto:\n{state.get("objetivo_especifico")}")
 
         productos_mga = agent.invoke({"messages": human_msg}, config)
 
