@@ -184,8 +184,22 @@ class ValueChain:
 
         productos_mga = agent.invoke({"messages": human_msg}, config)
 
+        df_acts = _buscar_actividades_edt(productos_mga.descripcion)
+        acts = _df_to_pydantic_list(df_acts)
+        
+        item_value_chain = ValueChainItem(
+            objetivo_especifico=state.get("objetivo_general"),
+            producto=productos_mga.producto,
+            indicador_verificacion=productos_mga.indicador_verificacion,
+            meta=None,
+            actividades=[act.actividad for act in acts],
+        )
+        
         return Command(
-            update={"productos_mga": [productos_mga.productos_mga]},
+            update={
+                "productos_mga": [productos_mga.productos_mga],
+                "value_chain": [ValueChain(items=[item_value_chain])]
+                },
             goto="activity_selection",
         )
 
@@ -230,11 +244,10 @@ class ValueChain:
         g.set_entry_point("generate_products")
         g.add_node("generate_products", self._generate_products)
         g.add_node("product_matcher",    self._product_matcher)
-        g.add_node("activity_selection", self._activity_selection)
         return g.compile()
 
     # ─────────── 6) run ────────────────────────────────────────
-    def run(self, state: ValueChainState, cfg) -> Command[Literal["policy_alignment_justification"]]:
+    def run(self, state: ValueChainState, cfg) -> Command[Literal["metodologia_proyecto"]]:
         graph = self._build_value_chain()
         result = graph.invoke(state, cfg)
         return Command(
@@ -244,5 +257,5 @@ class ValueChain:
                 "marco_logico":     result.marco_logico,
                 "cadena_valor":     result.cadena_valor,
             },
-            goto="policy_alignment_justification",
+            goto="metodologia_proyecto",
         )
