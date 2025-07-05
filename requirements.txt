@@ -17,21 +17,27 @@ pyarrow
 
 trustcall
 
+
 langchain
 langsmith 
 langchain-core
 langchain-openai
-langgraph
+langgraph==0.3.34
+langgraph-api
 langgraph-cli[inmem]
 langgraph-cli
-langgraph-swarm
+langgraph-swarm==0.0.10
 langchain-community
 langchain-experimental
 langgraph-reflection
 langchain_google_genai
 langchain_chroma
 langchain_openai
+langchain-huggingface 
+sentence-transformers 
+chromadb
 
+faiss-cpu
 mistralai
 
 matplotlib
@@ -41,6 +47,8 @@ squarify
 streamlit
 json-repair
 scikit-learn
+
+openpyxl
 
 trustcall
 python-dotenv

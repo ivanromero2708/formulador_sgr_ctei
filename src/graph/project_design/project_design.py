@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from ..state import FormuladorCTeIAgent
 from src.config.configuration import MultiAgentConfiguration
 from src.graph.project_design.deep_research_marco_conceptual.deep_research_marco_conceptual import DeepResearchMarcoConceptual
+from src.graph.project_design.value_chain.value_chain import ValueChain
 
 from langchain_core.messages import HumanMessage
 from langgraph.types import Command
@@ -24,15 +25,7 @@ class ProjectDesignState(FormuladorCTeIAgent):
 class ProjectDesign:
     def __init__(self) -> None:
         self.deep_research_marco_conceptual = DeepResearchMarcoConceptual()
-        pass
-    
-    def desarrollo_cadena_valor(self, state, config) -> Command[Literal["metodologia_proyecto"]]:
-        return Command(
-            goto="metodologia_proyecto",
-            update={
-                "messages": state.get("messages", []) + [HumanMessage(content="Cadena de valor desarrollada")],
-            }
-        )
+        self.value_chain = ValueChain()
     
     def metodologia_proyecto(self, state, config) -> Command[Literal["desarrollo_talento_humano"]]:
         return Command(
@@ -86,7 +79,7 @@ class ProjectDesign:
         builder = StateGraph(ProjectDesignState)
         builder.set_entry_point("desarrollo_marco_conceptual")
         builder.add_node("desarrollo_marco_conceptual", self.deep_research_marco_conceptual.run)
-        builder.add_node("desarrollo_cadena_valor", self.desarrollo_cadena_valor)
+        builder.add_node("desarrollo_cadena_valor", self.value_chain.run)
         builder.add_node("metodologia_proyecto", self.metodologia_proyecto)
         builder.add_node("desarrollo_talento_humano", self.desarrollo_talento_humano)
         builder.add_node("definir_productos_esperados", self.definir_productos_esperados)

@@ -3,6 +3,42 @@ from typing import Dict, List, Optional, Any, Literal, Annotated # Ensured Annot
 from pydantic import BaseModel, Field
 import operator
 
+# ────────────────────────────────────────────────────────────────
+#  A)  Actividades del catálogo EDT
+# ────────────────────────────────────────────────────────────────
+class ActivityEDT(BaseModel):
+    codigo_producto_estandarizado: str = Field(..., alias="Código producto estandarizado")
+    nombre_producto:               str = Field(..., alias="Nombre Producto")
+    codigo_entregable_n1:          str = Field(..., alias="Codigo entregable nivel 1")
+    nombre_entregable_n1:          str = Field(..., alias="Nombre entregable nivel 1")
+    codigo_entregable_n2:          str = Field(..., alias="Codigo entregable nivel 2")
+    nombre_entregable_n2:          str = Field(..., alias="Nombre entregable nivel 2")
+    codigo_entregable_n3:          str = Field(..., alias="Codigo entregable nivel 3")
+    nombre_entregable_n3:          str = Field(..., alias="Nombre entregable nivel 3")
+    codigo_actividad:              str = Field(..., alias="Codigo actividad")
+    actividad:                     str = Field(..., alias="Actividad")
+    unidad_medida:                 str = Field(..., alias="Unidad de medida")
+
+
+class ActivitiesEDT(BaseModel):
+    actividades: List[ActivityEDT]
+
+
+# ────────────────────────────────────────────────────────────────
+#  B)  Cadena de valor
+# ────────────────────────────────────────────────────────────────
+class ValueChainItem(BaseModel):
+    objetivo_especifico:  str
+    producto:             str
+    indicador_verificacion:str = Field(..., description="Medido a través del cual se verifica")
+    meta:                 Optional[str] = Field(None, description="Cantidad / Meta")
+    actividades:          List[str]     = Field(..., description="Actividades asociadas al producto")
+
+
+class ValueChain(BaseModel):
+    items: List[ValueChainItem]
+
+
 # Pydantic Models for State Variables
 
 class PerfilEntidad(BaseModel):

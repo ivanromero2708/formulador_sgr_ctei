@@ -124,6 +124,4 @@ def web_rag_pipeline_tool(website_url: str, search_query: str) -> dict:
         )
     except Exception as e:
         print(f"Error during vector search: {e}")
-        return f"Error during vector search: {e}"
-
-    return document_context
+        return f"Error
